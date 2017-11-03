@@ -4,10 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project2", "Project2\Project2.csproj", "{C5DF1BC6-1D91-42AA-814F-A7A0A30431DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{04E2930F-74CF-40BD-BF5D-64248AFF215B}"
-	ProjectSection(SolutionItems) = preProject
-		Project2\bin\Debug\output.csv = Project2\bin\Debug\output.csv
-		Project2\bin\Debug\output.xls = Project2\bin\Debug\output.xls
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
