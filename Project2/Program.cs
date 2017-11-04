@@ -9,7 +9,7 @@ namespace Project2
     {
         public static void Main(string[] args)
         {
-            AutonomousSystems autoSystems;
+            //AutonomousSystems autoSystems;
 
             if (args.Length == 1)
             {
@@ -38,28 +38,31 @@ namespace Project2
                 //        CountBadInput++;
                 //}
 
-                autoSystems = new AutonomousSystems(args[0]);
+                //autoSystems = new AutonomousSystems(args[0]);
 
                 //Console.WriteLine("Number of Transit/Access: {0}", CountASTA);
                 //Console.WriteLine("Number of Content: {0}", CountASContent);
                 //Console.WriteLine("Number of Enterprise: {0}", CountASEnterprise);
                 //Console.WriteLine("Number of Bad Input: {0}", CountBadInput);
 
-                Console.WriteLine("Number of Transit/Access: {0}", autoSystems.countType(ASTYPE.TRANSIT));
-                Console.WriteLine("Number of Content: {0}", autoSystems.countType(ASTYPE.CONTENT));
-                Console.WriteLine("Number of Enterprise: {0}", autoSystems.countType(ASTYPE.ENTERPRISE));
-                Console.WriteLine("Number of Bad Input: {0}", autoSystems.countType(ASTYPE.UNKNOWN));
+                //Console.WriteLine("Number of Transit/Access: {0}", autoSystems.countType(ASTYPE.TRANSIT));
+                //Console.WriteLine("Number of Content: {0}", autoSystems.countType(ASTYPE.CONTENT));
+                //Console.WriteLine("Number of Enterprise: {0}", autoSystems.countType(ASTYPE.ENTERPRISE));
+                //Console.WriteLine("Number of Bad Input: {0}", autoSystems.countType(ASTYPE.UNKNOWN));
 
-                var sw = new StreamWriter("./output.csv");
+                //var sw = new StreamWriter("./output.csv");
 
-                sw.WriteLine("Number of Transit/Access,Number Of Content, Number of Enterprise, Number of Bad Input");
-                sw.WriteLine(string.Format("{0},{1},{2},{3}",  
-                                            autoSystems.countType(ASTYPE.TRANSIT), 
-                                            autoSystems.countType(ASTYPE.CONTENT), 
-                                            autoSystems.countType(ASTYPE.ENTERPRISE), 
-                                            autoSystems.countType(ASTYPE.UNKNOWN)));
-                sw.Flush();
-                sw.Close();
+                //sw.WriteLine("Number of Transit/Access,Number Of Content, Number of Enterprise, Number of Bad Input");
+                //sw.WriteLine(string.Format("{0},{1},{2},{3}",  
+                //                            autoSystems.countType(ASTYPE.TRANSIT), 
+                //                            autoSystems.countType(ASTYPE.CONTENT), 
+                //                            autoSystems.countType(ASTYPE.ENTERPRISE), 
+                //                            autoSystems.countType(ASTYPE.UNKNOWN)));
+                //sw.Flush();
+                //sw.Close();
+
+                Graph2 g = new Graph2(args[0]);
+                g.printAll();
 
 
                 //TEST for git
