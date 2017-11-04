@@ -19,7 +19,8 @@ namespace Project2
                     //Console.WriteLine("Start: {0}, End: {1}", r.start.ToString(), r.end.ToString());
                     SubSection2 g = new SubSection2(args[1], args[2]);      
                     //g.printAll();
-                    g.PrintBins();
+                    g.ExportGraph4Data();
+                    //g.ExportGraph2Data();
                     break;
                 case "GRAPH3":
                     //stuff
