@@ -15,8 +15,11 @@ namespace Project2
                     AutonomousSystems autoSystems = new AutonomousSystems(args[1]);
                     break;
                 case "GRAPH2":
-                    SubSection2 g = new SubSection2(args[1], args[2]);
-                    g.printAll();
+                    //IPRange r = new IPRange("216.88.0.0", 14);
+                    //Console.WriteLine("Start: {0}, End: {1}", r.start.ToString(), r.end.ToString());
+                    SubSection2 g = new SubSection2(args[1], args[2]);      
+                    //g.printAll();
+                    g.PrintBins();
                     break;
                 case "GRAPH3":
                     //stuff
