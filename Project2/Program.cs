@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -9,19 +9,13 @@ namespace Project2
     {
         public static void Main(string[] args)
         {
-            if (args.Length != 2)
-            {
-                Console.WriteLine("Seriously? Give me TWO parameters... e.g. Graph1 file");
-                return;
-            }
-
             switch(args[0].ToUpper())
             {
                 case "GRAPH1":
                     AutonomousSystems autoSystems = new AutonomousSystems(args[1]);
                     break;
                 case "GRAPH2":
-                    Graph2 g = new Graph2(args[0]);
+                    SubSection2 g = new SubSection2(args[1], args[2]);
                     g.printAll();
                     break;
                 case "GRAPH3":
