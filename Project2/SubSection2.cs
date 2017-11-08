@@ -16,14 +16,16 @@ namespace Project2
     {
         public IPAddress start;
         public IPAddress end;
-        public IPAddress subnet;
-        public IPRange(string addr, int prefix)
+        public int prefix;
+        public uint totalIpSpace;
+        public IPRange(string addr, int pPrefix)
         {
+            prefix = pPrefix;
             start = IPAddress.Parse(addr);
-            uint possible_ips = Convert.ToUInt32(Math.Pow(2, 32 - prefix)) - 1;
+            totalIpSpace = Convert.ToUInt32(Math.Pow(2, 32 - prefix)) - 1;
             byte[] byteAddress = start.GetAddressBytes().Reverse().ToArray();
             uint ipAsUint = BitConverter.ToUInt32(byteAddress, 0);
-            var nextAddress = BitConverter.GetBytes(ipAsUint + possible_ips).Reverse().ToArray();
+            var nextAddress = BitConverter.GetBytes(ipAsUint + totalIpSpace).Reverse().ToArray();
             end = new IPAddress(nextAddress);
         }
 
@@ -181,6 +183,28 @@ namespace Project2
             Console.WriteLine("Total Transit: {0}", totalTransitAS);
 
         }
+
+        public void ExportGraph3Data()
+        {
+            SortedDictionary<IPAddress, int> ipBins = new SortedDictionary<IPAddress, int>();
+            StreamWriter export = new StreamWriter("graph3.csv");
+        
+            foreach (AS autoSys in Values)
+            {
+                foreach (IPRange ipr in autoSys.ranges)
+                {
+                    //Alex: I don't understand if this is supposed to be "total ip space" as in total number of possible ips
+                    //or is it the "total ip space" range, like 192.168.1.0-192.168.1.255. The only graph I can create that
+                    //makes sense is using the first number in each ip as the bin.
+
+                    //export.WriteLine(ipr.start + "," + ipr.start.GetHashCode());
+                    export.WriteLine(ipr.totalIpSpace);
+                }
+            }
+
+            export.Close();
+        }
+
         public void ExportGraph2Data()
         {
             int totalCount = 0;
