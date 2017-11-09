@@ -32,7 +32,10 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AS.cs" />
     <Compile Include="AutonomousSystems.cs" />
+    <Compile Include="IPRange.cs" />
+    <Compile Include="Link.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubSection2.cs" />

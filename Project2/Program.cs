@@ -9,30 +9,28 @@ namespace Project2
     {
         public static void Main(string[] args)
         {
-            switch(args[0].ToUpper())
+            SubSection2 g;
+
+            switch (args[0].ToUpper())
             {
                 case "GRAPH1":
                     AutonomousSystems autoSystems = new AutonomousSystems(args[1]);
                     break;
                 case "GRAPH2":
-                    //IPRange r = new IPRange("216.88.0.0", 14);
-                    //Console.WriteLine("Start: {0}, End: {1}", r.start.ToString(), r.end.ToString());
-                    SubSection2 g = new SubSection2(args[1], args[2]);
-                    //g.printAll();
-                    //g.ExportGraph4Data();
-                    //g.ExportGraph3Data();
+                    g = new SubSection2(args[1], args[2]);
                     g.ExportGraph2Data();
                     break;
                 case "GRAPH3":
-                    SubSection2 g = new SubSection2(args[1], args[2]);
+                    g = new SubSection2(args[1], args[2]);
                     g.ExportGraph3Data();
                     break;
                 case "GRAPH4":
-                    SubSection2 g = new SubSection2(args[1], args[2]);
+                    g = new SubSection2(args[1], args[2]);
                     g.ExportGraph4Data();
                     break;
                 case "TABLE1":
-                    //stuff
+                    g = new SubSection2(args[1], args[2]);
+                    g.ExportTable1Data();
                     break;
                 case "TABLE2":
                     //stuff
