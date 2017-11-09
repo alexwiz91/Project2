@@ -12,7 +12,8 @@ namespace Project2
         public int degree;
         public int num_peers;
         public string id;
-        public Dictionary<string, Link> links;
+        public Dictionary<string, Link> p2cLinks;
+        public Dictionary<string, Link> p2pLinks;
         //public List<Link> links;
         public List<IPRange> ranges;
         public IPAddress ip_addr;
@@ -23,16 +24,15 @@ namespace Project2
             degree = 0;
             num_peers = 0;
             //links = new List<Link>();
-            links = new Dictionary<string, Link>();
+            p2cLinks = new Dictionary<string, Link>();
             ranges = new List<IPRange>();
         }
-
 
         public void AddLink(Link l, bool isProvider = true)
         {
             if (l.type == LINK_TYPE.P2C_TYPE && isProvider)
             {
-                links.Add(l.destination, l);
+                p2cLinks.Add(l.destination, l);
             }
             if (l.type == LINK_TYPE.P2P_TYPE)
             {
@@ -56,7 +56,7 @@ namespace Project2
             //    }
             //}
 
-            return links.ContainsKey(id);
+            return p2cLinks.ContainsKey(id);
         }
     }
 }

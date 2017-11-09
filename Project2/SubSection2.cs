@@ -90,17 +90,17 @@ namespace Project2
 
             foreach(AS a in Values)
             {
-                if (a.degree <= 2 && a.num_peers == 0 && a.links.Count == 0)
+                if (a.degree <= 2 && a.num_peers == 0 && a.p2cLinks.Count == 0)
                 {
                     //Console.WriteLine("Enterprise AS found: {0}", a._id);
                     totalEnterpriseAS++;
                 }
-                else if(a.links.Count == 0 && a.num_peers >= 1)
+                else if(a.p2cLinks.Count == 0 && a.num_peers >= 1)
                 {
                     //Console.WriteLine("Content AS found: {0}", a._id);
                     totalContentAS++;
                 }
-                else if(a.links.Count >= 1)
+                else if(a.p2cLinks.Count >= 1)
                 {
 					//Console.WriteLine("Transit AS found: {0}", a._id);
                     totalTransitAS++;
