@@ -10,7 +10,6 @@ namespace Project2
     public class AS
     {
         public int degree;
-        public int num_peers;
         public string id;
         public Dictionary<string, Link> p2cLinks;
         public Dictionary<string, Link> p2pLinks;
@@ -22,9 +21,9 @@ namespace Project2
         {
             id = pId;
             degree = 0;
-            num_peers = 0;
             //links = new List<Link>();
             p2cLinks = new Dictionary<string, Link>();
+            p2pLinks = new Dictionary<string, Link>();
             ranges = new List<IPRange>();
         }
 
@@ -36,7 +35,8 @@ namespace Project2
             }
             if (l.type == LINK_TYPE.P2P_TYPE)
             {
-                num_peers++;
+                if (!p2pLinks.ContainsKey(l.destination))
+                    p2pLinks.Add(l.destination, l);
             }
             degree++;
         }
@@ -48,15 +48,7 @@ namespace Project2
 
         public bool IsConnected(string id)
         {
-            //foreach (Link l in links)
-            //{
-            //    if (l.destination == id)
-            //    {
-            //        return true;
-            //    }
-            //}
-
-            return p2cLinks.ContainsKey(id);
+            return p2cLinks.ContainsKey(id) || p2pLinks.ContainsKey(id);
         }
     }
 }

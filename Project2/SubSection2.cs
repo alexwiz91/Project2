@@ -37,7 +37,7 @@ namespace Project2
                     Add(parsed_line[1], new AS(parsed_line[1]));
                 }
 				this[parsed_line[0]].AddLink(new Link(parsed_line));
-                this[parsed_line[1]].AddLink(new Link(parsed_line), false);
+                this[parsed_line[1]].AddLink(new Link(parsed_line, false), false);
 
 			}
         }
@@ -90,12 +90,12 @@ namespace Project2
 
             foreach(AS a in Values)
             {
-                if (a.degree <= 2 && a.num_peers == 0 && a.p2cLinks.Count == 0)
+                if (a.degree <= 2 && a.p2pLinks.Count == 0 && a.p2cLinks.Count == 0)
                 {
                     //Console.WriteLine("Enterprise AS found: {0}", a._id);
                     totalEnterpriseAS++;
                 }
-                else if(a.p2cLinks.Count == 0 && a.num_peers >= 1)
+                else if(a.p2cLinks.Count == 0 && a.p2pLinks.Count >= 1)
                 {
                     //Console.WriteLine("Content AS found: {0}", a._id);
                     totalContentAS++;
@@ -193,48 +193,59 @@ namespace Project2
         public void ExportTable1Data()
         {
             List<AS> sortedList = Values.ToList().OrderBy(o=>o.degree).Reverse().ToList();
-
-            //temporary for testing!
-            //sortedList.RemoveAt(0);
-            //sortedList.RemoveAt(0);
-
             List<AS> s = new List<AS>();
+
+            SortedDictionary< int, List<AS> > cliques = new SortedDictionary< int, List<AS> >();
 
             bool addToSet = false;
 
-            foreach(AS autoSys in sortedList)
-            {
-                addToSet = true;
+            int i = 0;
+            int j = 0;
 
-                foreach(AS fromSet in s)
+            //foreach(AS autoSys in sortedList)
+            for (i = 0; i < sortedList.Count; i++)
+            {
+                for (j = i; j < sortedList.Count; j++)
                 {
-                    if (!autoSys.IsConnected(fromSet.id))
+                    addToSet = true;
+
+                    foreach (AS fromSet in s)
                     {
-                        addToSet = false;
+                        if (!sortedList[j].IsConnected(fromSet.id))
+                        {
+                            addToSet = false;
+                            break;
+                        }
+                    }
+
+                    if (addToSet)
+                    {
+                        s.Add(sortedList[j]);
+                    }
+                    else
+                    {
                         break;
                     }
                 }
 
-                if (addToSet)
+                if (!cliques.ContainsKey(s.Count))
                 {
-                    s.Add(autoSys);
+                    cliques.Add(s.Count, s);
                 }
-                else
-                {
-                    break;
-                }
+
+                s = new List<AS>();
             }
 
             export = new StreamWriter("table1.csv");
 
-            export.WriteLine("T1 Size:," + s.Count);
+            export.WriteLine("T1 Size:," + cliques.Last().Key);
             export.WriteLine();
 
             int count = 0;
-            foreach (AS autoSys in s)
+            foreach (AS autoSys in cliques.Last().Value)
             {
-                if (count >= 10)
-                    break;
+                //if (count >= 10)
+                //    break;
 
                 export.WriteLine(autoSys.id + "," + autoSys.degree);
                 count++;
