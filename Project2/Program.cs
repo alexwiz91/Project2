@@ -33,7 +33,8 @@ namespace Project2
                     g.ExportTable1Data();
                     break;
                 case "TABLE2":
-                    //stuff
+                    g = new SubSection2(args[1], args[2]);
+                    g.ExportTable2Data();
                     break;
                 case "TABLE3":
                     //stuff

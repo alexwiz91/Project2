@@ -12,12 +12,12 @@ namespace Project2
 
         public SubSection2(string ASfilename, string IPFilename) : base()
         {
-            ConfigureASes(ASfilename);
+            ConfigureASSes(ASfilename);
             ConfigureIPs(IPFilename);
            
         }
 
-        public void ConfigureASes(string filename)
+        public void ConfigureASSes(string filename)
         {
 			string[] parsed_line = new string[4];
 
@@ -252,6 +252,119 @@ namespace Project2
             }
 
             export.Close();
+        }
+
+        public Tuple<int, HashSet<AS>> TraverseCustomers_recursive(AS start)
+        {
+            int count = 0;
+            HashSet<AS> h = new HashSet<AS>();
+            h.Add(start);
+            count += TraverseCustomers(start, ref h);
+            return new Tuple<int, HashSet<AS>>(count, h);
+
+          
+        }
+        public int TraverseCustomers(AS start, ref HashSet<AS> assesAlreadyAdded)
+        {
+            int count = 0;
+            // Base case, if we don't have links to traverse then we wanna return out of this
+            if (start.p2cLinks.Count == 0)
+            {
+                count = 0;
+                Console.WriteLine("{0} has no more p2c links", start.id);
+            }
+            else
+            {
+                // Chec each link associated with the passed AS
+                foreach (Link l in start.p2cLinks.Values)
+                {
+                    if (this.ContainsKey(l.destination))
+                    {
+                        // The assesAlreadyAdded structure avoids iterating through the same AS over and over
+                        // Add() returns true when the addition to the set was successfull and false otherwise
+                        if (assesAlreadyAdded.Add(this[l.destination]))
+                        {
+                            // Recursively iterate through ASes with id of link.destination
+                            count += 1 + TraverseCustomers(this[l.destination], ref assesAlreadyAdded);
+                        }
+                    }
+                }
+            }
+            return count;
+
+        }
+
+        public int p2cCount(AS start)
+		{
+            int count = start.p2cLinks.Count();
+			// Base case, if we don't have links to traverse then we wanna return out of this
+			
+			// Chec each link associated with the passed AS
+			foreach (Link l in start.p2cLinks.Values)
+			{
+				if (this.ContainsKey(l.destination))
+				{
+                    count += p2cCount(this[l.destination]);
+				}
+			}
+		
+			return count;
+
+		}
+
+        public void ExportTable2Data()
+        {
+            List<AS> sortedList = Values.ToList().OrderBy(o => o.degree).Reverse().ToList();
+			List<AS> s = new List<AS>();
+
+            SortedDictionary<int, HashSet<AS>> customerCones = new SortedDictionary<int, HashSet<AS>>();
+            SortedDictionary<int, AS> customerCones2 = new SortedDictionary<int, AS>();
+            List<int> removalList = new List<int>();
+            foreach (AS a in sortedList)
+            {
+                Tuple<int, HashSet<AS>> customerCountAndAS = TraverseCustomers_recursive(a);
+                //foreach(KeyValuePair<int, HashSet<AS>> kv in customerCones)
+                //{
+                //    if(kv.Value.Contains(customerCountAndAS.Item2.First()) && customerCountAndAS.Item1 > kv.Key)
+                //    {
+                //        removalList.Add(kv.Key);
+                //    }
+                //}
+                if (!customerCones.ContainsKey(customerCountAndAS.Item1))
+                {
+                    customerCones.Add(customerCountAndAS.Item1, customerCountAndAS.Item2);
+                }
+            }
+            foreach (AS ab in sortedList)
+            {
+                int count = p2cCount(ab);
+                if (!customerCones2.ContainsKey(count))
+                    customerCones2.Add(p2cCount(ab), ab);
+            }
+
+
+            foreach (int removalIndex in removalList)
+                customerCones.Remove(removalIndex);
+
+			export = new StreamWriter("table2.csv");
+			export.WriteLine("customer2 p2c link count: {0}", customerCones2.Last().Key);
+            Console.WriteLine("Customer Cone Size: {0}", customerCones.Keys.Reverse().FirstOrDefault());
+            export.WriteLine("Customer Cone Size: {0}", customerCones.Keys.Reverse().FirstOrDefault());
+			foreach (AS a in customerCones[customerCones.Keys.Reverse().FirstOrDefault()])
+                export.WriteLine(",,{0}", a.id);
+				//        for (int i = 0; i < 15; i++)
+				//        {
+				//// Nifty way to get the 15 highest customer cone networks
+				//Console.WriteLine("Customer Cone Size: {0}", customerCones.Keys.Reverse().Skip(i).FirstOrDefault());
+				//            export.WriteLine("Customer Cone Size: {0}\tCustomer Cone: ", customerCones.Keys.Reverse().Skip(i).FirstOrDefault());
+				//            foreach(AS a in customerCones[customerCones.Keys.Reverse().Skip(i).FirstOrDefault()])
+				//                export.WriteLine("\t\t\t\t\t\t{0}", a.id);
+				//export.WriteLine();
+				//}
+
+
+				export.Close();
+            
         }
     }
 }
