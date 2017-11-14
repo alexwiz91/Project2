@@ -12,12 +12,12 @@ namespace Project2
 
         public SubSection2(string ASfilename, string IPFilename) : base()
         {
-            ConfigureASSes(ASfilename);
+            ConfigureASes(ASfilename);
             ConfigureIPs(IPFilename);
            
         }
 
-        public void ConfigureASSes(string filename)
+        public void ConfigureASes(string filename)
         {
 			string[] parsed_line = new string[4];
 
@@ -25,18 +25,29 @@ namespace Project2
 			{
 				if (line[0] == '#')
 					continue;
+
 				parsed_line = line.Split('|');
+
+                AS left = null;
+                AS right = null;
 
 				if (!this.ContainsKey(parsed_line[0]))
 				{
-					Add(parsed_line[0], new AS(parsed_line[0]));
-				}
+                    left = new AS(parsed_line[0]);
+					Add(parsed_line[0], left);
+                }
+
                 if (!this.ContainsKey(parsed_line[1]))
                 {
-                   // Console.WriteLine("{0}", parsed_line[1]);
-                    Add(parsed_line[1], new AS(parsed_line[1]));
+                    right = new AS(parsed_line[1]);
+                    Add(parsed_line[1], right);
                 }
-				this[parsed_line[0]].AddLink(new Link(parsed_line));
+                else
+                {
+                    right = this[parsed_line[1]];
+                }
+
+				this[parsed_line[0]].AddLink(new Link(parsed_line), true, right);
                 this[parsed_line[1]].AddLink(new Link(parsed_line, false), false);
 
 			}
@@ -69,10 +80,7 @@ namespace Project2
             foreach(AS a in this.Values)
             {
                 Console.WriteLine("AS id: {0}, AS degree: {1}", a.id, a.degree);
-                //foreach (Link link in a.links)
-                //{   
-                //    Console.WriteLine("\t\tOrigin: {0}, Destination: {1}, Type: {2}", link.origin, link.destination, link.type.ToString());
-                //}
+
                 foreach (IPRange r in a.ranges)
                 {
                     Console.WriteLine("\t\tStart Address: {0}, EndAddress: {1}", r.start, r.end);
@@ -264,7 +272,7 @@ namespace Project2
 
           
         }
-        public int TraverseCustomers(AS start, ref HashSet<AS> assesAlreadyAdded)
+        public int TraverseCustomers(AS start, ref HashSet<AS> asesAlreadyAdded)
         {
             int count = 0;
             // Base case, if we don't have links to traverse then we wanna return out of this
@@ -280,12 +288,12 @@ namespace Project2
                 {
                     if (this.ContainsKey(l.destination))
                     {
-                        // The assesAlreadyAdded structure avoids iterating through the same AS over and over
+                        // The asesAlreadyAdded structure avoids iterating through the same AS over and over
                         // Add() returns true when the addition to the set was successfull and false otherwise
-                        if (assesAlreadyAdded.Add(this[l.destination]))
+                        if (asesAlreadyAdded.Add(this[l.destination]))
                         {
                             // Recursively iterate through ASes with id of link.destination
-                            count += 1 + TraverseCustomers(this[l.destination], ref assesAlreadyAdded);
+                            count += 1 + TraverseCustomers(this[l.destination], ref asesAlreadyAdded);
                         }
                     }
                 }
@@ -314,57 +322,33 @@ namespace Project2
 
         public void ExportTable2Data()
         {
-            List<AS> sortedList = Values.ToList().OrderBy(o => o.degree).Reverse().ToList();
-			List<AS> s = new List<AS>();
-
-            SortedDictionary<int, HashSet<AS>> customerCones = new SortedDictionary<int, HashSet<AS>>();
-            SortedDictionary<int, AS> customerCones2 = new SortedDictionary<int, AS>();
-            List<int> removalList = new List<int>();
-            foreach (AS a in sortedList)
+            foreach(AS autoSysRoot in Values)
             {
-                Tuple<int, HashSet<AS>> customerCountAndAS = TraverseCustomers_recursive(a);
-                //foreach(KeyValuePair<int, HashSet<AS>> kv in customerCones)
-                //{
-                //    if(kv.Value.Contains(customerCountAndAS.Item2.First()) && customerCountAndAS.Item1 > kv.Key)
-                //    {
-                //        removalList.Add(kv.Key);
-                //    }
-                //}
-                if (!customerCones.ContainsKey(customerCountAndAS.Item1))
-                {
-                    customerCones.Add(customerCountAndAS.Item1, customerCountAndAS.Item2);
-                }
-            }
-            foreach (AS ab in sortedList)
-            {
-                int count = p2cCount(ab);
-                if (!customerCones2.ContainsKey(count))
-                    customerCones2.Add(p2cCount(ab), ab);
+                EvalSet.Instance.Add(autoSysRoot.id);
+                autoSysRoot.DetermineCone();
             }
 
+            List<AS> sortedList = Values.ToList().OrderBy(o => o.customerConeSize).Reverse().ToList();
 
-            foreach (int removalIndex in removalList)
-                customerCones.Remove(removalIndex);
+            export = new StreamWriter("table2.csv");
 
-			export = new StreamWriter("table2.csv");
-			export.WriteLine("customer2 p2c link count: {0}", customerCones2.Last().Key);
-            Console.WriteLine("Customer Cone Size: {0}", customerCones.Keys.Reverse().FirstOrDefault());
-            export.WriteLine("Customer Cone Size: {0}", customerCones.Keys.Reverse().FirstOrDefault());
-			foreach (AS a in customerCones[customerCones.Keys.Reverse().FirstOrDefault()])
-                export.WriteLine(",,{0}", a.id);
-				//        for (int i = 0; i < 15; i++)
-				//        {
-				//// Nifty way to get the 15 highest customer cone networks
-				//Console.WriteLine("Customer Cone Size: {0}", customerCones.Keys.Reverse().Skip(i).FirstOrDefault());
-				//            export.WriteLine("Customer Cone Size: {0}\tCustomer Cone: ", customerCones.Keys.Reverse().Skip(i).FirstOrDefault());
-				//            foreach(AS a in customerCones[customerCones.Keys.Reverse().Skip(i).FirstOrDefault()])
-				//                export.WriteLine("\t\t\t\t\t\t{0}", a.id);
-				//export.WriteLine();
-				//}
+            uint totalIpAddresses = 0;
+            foreach (AS autoSys in sortedList)
+            {
+                totalIpAddresses += autoSys.numIpAddresses();
+            }
 
+            float percentIpSpace = 0.0f; 
 
-				export.Close();
-            
+            for (int i = 0; i < 15; i++)
+            {
+                percentIpSpace = ((float)sortedList[i].totalIpReach / (float)totalIpAddresses) * 100f;
+
+                EvalSet.Instance.Clear();
+                export.WriteLine(sortedList[i].id + "," + sortedList[i].customerConeSize + "," + Math.Round(percentIpSpace, 2));
+            }
+
+            export.Close();
         }
     }
 }
