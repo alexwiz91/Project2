@@ -36,6 +36,10 @@ namespace Project2
                     left = new AS(parsed_line[0]);
 					Add(parsed_line[0], left);
                 }
+                else
+                {
+                    left = this[parsed_line[0]];
+                }
 
                 if (!this.ContainsKey(parsed_line[1]))
                 {
@@ -48,7 +52,7 @@ namespace Project2
                 }
 
 				this[parsed_line[0]].AddLink(new Link(parsed_line), true, right);
-                this[parsed_line[1]].AddLink(new Link(parsed_line, false), false);
+                this[parsed_line[1]].AddLink(new Link(parsed_line, false), false, left);
 
 			}
         }
@@ -130,16 +134,19 @@ namespace Project2
         {
             SortedDictionary<IPAddress, int> ipBins = new SortedDictionary<IPAddress, int>();
             StreamWriter export = new StreamWriter("graph3.csv");
-        
+
+            export.WriteLine("AS ID,IP SPACE");
+            foreach (AS autoSys in Values)
+            {
+                export.WriteLine(autoSys.id + "," + autoSys.numIpAddresses());
+            }
+
+            export.WriteLine();
+            export.WriteLine("IP,IP SPACE,HASH");
             foreach (AS autoSys in Values)
             {
                 foreach (IPRange ipr in autoSys.ranges)
                 {
-                    //Alex: I don't understand if this is supposed to be "total ip space" as in total number of possible ips
-                    //or is it the "total ip space" range, like 192.168.1.0-192.168.1.255. The only graph I can create that
-                    //makes sense is using the first number in each ip as the bin.
-
-                    // Just pooping three different data points. We can put together some sort of histogram from them.
                     export.WriteLine(ipr.start + "," + ipr.start.ToString().Split('.')[0] + "," + ipr.GetHashCode());
                 }
             }
@@ -159,8 +166,12 @@ namespace Project2
 
             export = new StreamWriter("graph2.csv");
 
+            export.WriteLine("AS ID,DEGREE");
+
             foreach(AS a in Values)
             {
+                export.WriteLine(a.id + "," + a.degree);
+
                 if (a.degree == 1)
                     firstBin++;
                 else if (a.degree > 1 && a.degree <= 5)
@@ -171,11 +182,12 @@ namespace Project2
                     fourthBin++;
                 else if (a.degree > 200 && a.degree <= 1000)
                     fifthBin++;
-                else
+                else if (a.degree > 1000)
                 {
                     //Console.WriteLine(a._id);
                     sixthBin++;
                 }
+
                 totalCount++;
             }
         
@@ -188,6 +200,8 @@ namespace Project2
             Console.WriteLine("FifthBin(201-1000): {0}", fifthBin);
             Console.WriteLine("SixthBin(>1000): {0}", sixthBin);
 
+            export.WriteLine();
+            export.WriteLine("Bins:");
             export.WriteLine("1," + firstBin);
             export.WriteLine("2-5," + secondBin);
             export.WriteLine("6-100," + thirdBin);
@@ -202,6 +216,8 @@ namespace Project2
         {
             List<AS> sortedList = Values.ToList().OrderBy(o=>o.degree).Reverse().ToList();
             List<AS> s = new List<AS>();
+
+            export = new StreamWriter("table1.csv");
 
             SortedDictionary< int, List<AS> > cliques = new SortedDictionary< int, List<AS> >();
 
@@ -241,20 +257,26 @@ namespace Project2
                     cliques.Add(s.Count, s);
                 }
 
+                if (cliques.Count == 1)
+                {
+                    export.WriteLine("First Clique:," + s.Count);
+                    export.WriteLine();
+                    foreach(AS autoSys in s)
+                    {
+                        export.WriteLine(autoSys.id);
+                    }
+                }
+
                 s = new List<AS>();
             }
 
-            export = new StreamWriter("table1.csv");
-
-            export.WriteLine("T1 Size:," + cliques.Last().Key);
+            export.WriteLine();
+            export.WriteLine("Biggest Clique:," + cliques.Last().Key);
             export.WriteLine();
 
             int count = 0;
             foreach (AS autoSys in cliques.Last().Value)
             {
-                //if (count >= 10)
-                //    break;
-
                 export.WriteLine(autoSys.id + "," + autoSys.degree);
                 count++;
             }
@@ -324,6 +346,8 @@ namespace Project2
         {
             foreach(AS autoSysRoot in Values)
             {
+                EvalSet.Instance.totalIpSpace = 0;
+                EvalSet.Instance.totalPrefix = 0;
                 EvalSet.Instance.Add(autoSysRoot.id);
                 autoSysRoot.DetermineCone();
             }
@@ -333,19 +357,68 @@ namespace Project2
             export = new StreamWriter("table2.csv");
 
             uint totalIpAddresses = 0;
+            uint totalIpPrefix = 0;
+
             foreach (AS autoSys in sortedList)
             {
                 totalIpAddresses += autoSys.numIpAddresses();
+                totalIpPrefix += (uint)autoSys.ranges.Count;
             }
 
-            float percentIpSpace = 0.0f; 
+            foreach (AS autoSys in sortedList)
+            {
+                autoSys.percentIpSpace = ((float)autoSys.totalIpReach / (float)totalIpAddresses);
+            }
 
+            float percentAses = 0.0f;
+            float percentIpPrefix = 0.0f;
+            float percentIpSpace = 0.0f;
+
+            export.WriteLine("Customer Cone by Number of ASes");
+            export.WriteLine("#,name,degree,# ASes,# IP Prefix,# IPs,% ASes,% IP Prefix,% IPs");
             for (int i = 0; i < 15; i++)
             {
-                percentIpSpace = ((float)sortedList[i].totalIpReach / (float)totalIpAddresses) * 100f;
+                AS sys = sortedList[i];
+
+                percentAses = ((float)sys.customerConeSize / (float)Count);
+                percentIpPrefix = ((float)sys.customerConePrefixNum / (float)totalIpPrefix);
+                percentIpSpace = ((float)sys.totalIpReach / (float)totalIpAddresses);
 
                 EvalSet.Instance.Clear();
-                export.WriteLine(sortedList[i].id + "," + sortedList[i].customerConeSize + "," + Math.Round(percentIpSpace, 2));
+                export.WriteLine(sys.id + ",," +
+                                 sys.degree + "," +
+                                 sys.customerConeSize + "," +
+                                 sys.customerConePrefixNum + "," +
+                                 sys.totalIpReach + "," +
+                                 percentAses + "," +
+                                 percentIpPrefix + "," +
+                                 percentIpSpace);
+
+            }
+
+            sortedList = sortedList.OrderBy(o => o.percentIpSpace).Reverse().ToList();
+
+            export.WriteLine();
+            export.WriteLine("Customer Cone by Percentage of IPs");
+            export.WriteLine("#,name,degree,# ASes,# IP Prefix,# IPs,% ASes,% IP Prefix,% IPs");
+            for (int i = 0; i < 15; i++)
+            {
+                AS sys = sortedList[i];
+
+                percentAses = ((float)sys.customerConeSize / (float)Count);
+                percentIpPrefix = ((float)sys.customerConePrefixNum / (float)totalIpPrefix);
+                //percentIpSpace = ((float)sys.totalIpReach / (float)totalIpAddresses);
+
+                EvalSet.Instance.Clear();
+                export.WriteLine(sys.id + ",," +
+                                 sys.degree + "," +
+                                 sys.customerConeSize + "," +
+                                 sys.customerConePrefixNum + "," +
+                                 sys.totalIpReach + "," +
+                                 percentAses + "," +
+                                 percentIpPrefix + "," +
+                                 sys.percentIpSpace);
+
             }
 
             export.Close();

@@ -45,7 +45,7 @@ namespace Project2
             }
         }
 
-        public int countType(ASTYPE type)
+        public int CountType(ASTYPE type)
         {
             int count = 0;
 
@@ -56,6 +56,17 @@ namespace Project2
             }
 
             return count;
+        }
+
+        public void ExportGraph1Data()
+        {
+            StreamWriter export = new StreamWriter("graph1.csv");
+
+            export.WriteLine("Content," + CountType(ASTYPE.CONTENT));
+            export.WriteLine("Enterprise," + CountType(ASTYPE.ENTERPRISE));
+            export.WriteLine("Transit," + CountType(ASTYPE.TRANSIT));
+
+            export.Close();
         }
     }
 }

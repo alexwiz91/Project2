@@ -11,6 +11,7 @@ namespace Project2
         private static EvalSet instance = null;
         private static readonly object padlock = new object();
         public uint totalIpSpace = 0;
+        public int totalPrefix = 0;
 
         private EvalSet() : base()
         {
